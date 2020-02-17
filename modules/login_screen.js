@@ -17,7 +17,7 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [isEmailCorrect, setIsEmailCorrect] = useState(false);
 
-  /**
+  /** Hello
    * Validates email pattern
    * @param text containing the email
    */
