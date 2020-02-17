@@ -3,7 +3,7 @@ import {AsyncStorage, StyleSheet, Text, View} from 'react-native';
 import auth from '@react-native-firebase/auth';
 
 const SplashScreen = ({navigation}) => {
-  
+
   useEffect(() => {
     async function fetchDetails() {
       const email = await AsyncStorage.getItem('email');
