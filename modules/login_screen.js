@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+/* eslint-disable prettier/prettier */
+import React, {useState} from 'react';
 import {
   Alert,
   AsyncStorage,
@@ -11,95 +12,34 @@ import {
 import validator from 'validator';
 import auth from '@react-native-firebase/auth';
 
-export default class LoginScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.email = '';
-    this.password = '';
-    this.isEmailCorrect = false;
-  }
-
-  render() {
-    return (
-      <View style={styles.root}>
-        <Text style={styles.appName}>REPAYLINE</Text>
-        <View>
-          <Text style={styles.welcomeMessageFirstLine}>Hi there</Text>
-          <Text style={styles.welcomeMessage}>please login</Text>
-          <Text style={styles.welcomeMessage}>to your account.</Text>
-        </View>
-        <View>
-          <View>
-            <TextInput
-              style={styles.textInputEmail}
-              placeholder="Email"
-              ref={component => (this.textInputEmail = component)}
-              onChangeText={text => this.onCheckEmailInput(text)}
-            />
-            <TextInput
-              style={styles.textInputPassword}
-              placeholder="Password"
-              secureTextEntry={true}
-              onChangeText={text => (this.password = text)}
-            />
-          </View>
-          <TouchableOpacity onPress={this.onLogin}>
-            <Text style={styles.buttonLogIn}>Log me in</Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Text style={styles.textLoginInfo}>
-            Forgot password?{' '}
-            <Text
-              style={styles.textLoginInfoLink}
-              onPress={() => this.props.navigation.navigate('ForgotPassword')}>
-              Get it now
-            </Text>
-          </Text>
-          <Text style={styles.textLoginInfo}>
-            Don't have an account?{' '}
-            <Text
-              style={styles.textLoginInfoLink}
-              onPress={() => this.props.navigation.navigate('Register')}>
-              Sign up now
-            </Text>
-          </Text>
-        </View>
-      </View>
-    );
-  }
+const LoginScreen = ({navigation}) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isEmailCorrect, setIsEmailCorrect] = useState(false);
 
   /**
    * Validates email pattern
    * @param text containing the email
    */
-  onCheckEmailInput(text) {
-    this.email = text;
+  const onCheckEmailInput = (text) => {
+    setEmail(text);
     if (!validator.isEmail(text)) {
-      this.isEmailCorrect = false;
-      this.textInputEmail.setNativeProps({
-        borderColor: '#DC7575',
-        borderWidth: 1,
-      });
+      setIsEmailCorrect(false);
     } else if (validator.isEmail(text)) {
-      this.isEmailCorrect = true;
-      this.textInputEmail.setNativeProps({
-        borderColor: '#CCCCCC',
-        borderBottomWidth: 0,
-      });
+      setIsEmailCorrect(true);
     }
-  }
+  };
 
   /**
    * Validates the email and password input for empty entries
    */
-  onLogin = async () => {
-    if (this.email === '' || this.password === '') {
+  const onLogin = async () => {
+    if (email === '' || password === '') {
       Alert.alert('Sign In', 'Please provide all details');
-    } else if (!this.isEmailCorrect) {
+    } else if (!isEmailCorrect) {
       Alert.alert('Sign In', 'Please provide a valid email');
     } else {
-      this.authUser(this.email, this.password);
+      authUser(email, password);
     }
   };
 
@@ -108,14 +48,14 @@ export default class LoginScreen extends Component {
    * @param {*} email of the user
    * @param {*} password of the user
    */
-  async authUser(email, password) {
+  const authUser = async (em, pass) => {
     auth()
-      .signInWithEmailAndPassword(email, password)
+      .signInWithEmailAndPassword(em, pass)
       .then(async () => {
         // Persist user's credentials
-        await AsyncStorage.setItem('email', email);
-        await AsyncStorage.setItem('password', password);
-        this.props.navigation.reset({
+        await AsyncStorage.setItem('email', em);
+        await AsyncStorage.setItem('password', pass);
+        navigation.reset({
           index: 0,
           routes: [{name: 'Tickets'}],
         });
@@ -129,7 +69,7 @@ export default class LoginScreen extends Component {
             );
             break;
           case 'auth/invalid-email':
-            Alert.alert('Sign In', `Hey, ${email} is invalid`);
+            Alert.alert('Sign In', `Hey, ${em} is invalid`);
             break;
           case 'auth/wrong-password':
             Alert.alert('Sign In', 'Hey, looks like your password is wrong');
@@ -138,8 +78,58 @@ export default class LoginScreen extends Component {
           // Do nothing
         }
       });
-  }
-}
+  };
+
+  return (
+    <View style={styles.root}>
+      <Text style={styles.appName}>REPAYLINE</Text>
+      <View>
+        <Text style={styles.welcomeMessageFirstLine}>Hi there</Text>
+        <Text style={styles.welcomeMessage}>please login</Text>
+        <Text style={styles.welcomeMessage}>to your account.</Text>
+      </View>
+      <View>
+        <View>
+          <TextInput
+            style={[styles.textInputEmail, {borderColor: isEmailCorrect ? '#CCCCCC' : '#DC7575'}]}
+            placeholder="Email"
+            defaultValue={email}
+            onChangeText={text => onCheckEmailInput(text)}
+          />
+          <TextInput
+            style={styles.textInputPassword}
+            placeholder="Password"
+            secureTextEntry={true}
+            onChangeText={text => setPassword(text)}
+          />
+        </View>
+        <TouchableOpacity onPress={onLogin}>
+          <Text style={styles.buttonLogIn}>Log me in</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <Text style={styles.textLoginInfo}>
+          Forgot password?{' '}
+          <Text
+            style={styles.textLoginInfoLink}
+            onPress={() => navigation.navigate('ForgotPassword')}>
+            Get it now
+          </Text>
+        </Text>
+        <Text style={styles.textLoginInfo}>
+          Don't have an account?{' '}
+          <Text
+            style={styles.textLoginInfoLink}
+            onPress={() => navigation.navigate('Register')}>
+            Sign up now
+          </Text>
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   root: {

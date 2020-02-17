@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import {
   FlatList,
   Image,
@@ -10,120 +10,106 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 
-export default class TicketsScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.journeyFrom = '';
-    this.journeyTo = '';
-    this.state = {
-      isModalVisible: false,
-      journeys: [],
-    };
-  }
+const TicketsScreen = ({navigation}) => {
+  const [journeyFrom, setJourneyFrom] = useState('');
+  const [journeyTo, setJourneyTo] = useState('');
+  const [display, setDisplay] = useState({
+    isModalVisible: false,
+    journeys: [],
+  });
 
   /**
    * Toggles the visibility of the modal
    * @param isVisible
    */
-  setModalVisibility(isVisible) {
-    this.setState({
-      isModalVisible: isVisible,
-    });
-  }
+  const setModalVisibility = isVisible => {
+    setDisplay({isModalVisible: isVisible, journeys: display.journeys});
+  };
 
   /**
    * Adds a new journey
    */
-  addJourney() {
+  const addJourney = () => {
     const journey = {
       id: Math.random().toString(),
-      from: this.journeyFrom,
-      to: this.journeyTo,
+      from: journeyFrom,
+      to: journeyTo,
     };
-    const journeys = this.state.journeys;
+    const journeys = display.journeys;
     journeys.push(journey);
-    this.setState({
-      ...journeys,
-    });
-  }
+    setDisplay({isModalVisible: display.isModalVisible, ...journeys});
+  };
 
-  render() {
-    return (
-      <View style={styles.root}>
-        <View style={styles.viewSeeTravels}>
-          <Text style={styles.textSeeTravels}>See your</Text>
-          <Text style={styles.textSeeTravels}>travels</Text>
-        </View>
-        <View style={styles.ticketsSearchIconContainer}>
-          <TextInput
-            style={styles.textInputTicketsSearch}
-            ref={component => (this.textInputTicketsSearch = component)}
-          />
-          <Image
-            style={styles.ticketsSearchIcon}
-            source={require('../resources/search.png')}
-          />
-        </View>
-        <FlatList
-          data={this.state.journeys}
-          keyExtractor={journey => journey.id}
-          renderItem={({item}) => (
-            <View style={styles.journeyView}>
-              <View style={styles.imageTrainLogoContainer}>
-                <Image source={require('../resources/train_placeholder.png')} />
-              </View>
-              <View style={styles.journeyDetails}>
-                <Text>{item.from}</Text>
-                <Image
-                  source={require('../resources/arrow-circle-right.png')}
-                />
-                <Text>{item.to}</Text>
-              </View>
-            </View>
-          )}
+  return (
+    <View style={styles.root}>
+      <View style={styles.viewSeeTravels}>
+        <Text style={styles.textSeeTravels}>See your</Text>
+        <Text style={styles.textSeeTravels}>travels</Text>
+      </View>
+      <View style={styles.ticketsSearchIconContainer}>
+        <TextInput style={styles.textInputTicketsSearch} />
+        <Image
+          style={styles.ticketsSearchIcon}
+          source={require('../resources/search.png')}
         />
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => {
-            this.setModalVisibility(!this.state.isModalVisible);
-          }}>
-          <Text style={styles.textPlusSymbol}>+</Text>
-        </TouchableOpacity>
-        <Modal isVisible={this.state.isModalVisible} hasBackdrop={false}>
-          <View style={styles.modal}>
-            <View>
-              <TextInput
-                style={styles.textInputStation}
-                placeholder="Departure Station:"
-                ref={component => (this.textInputDepartStation = component)}
-                onChangeText={text => (this.journeyFrom = text)}
-              />
-              <TextInput
-                style={styles.textInputStation}
-                placeholder="Destination Station:"
-                ref={component => (this.textInputDestStation = component)}
-                onChangeText={text => (this.journeyTo = text)}
-              />
+      </View>
+      <FlatList
+        data={display.journeys}
+        keyExtractor={journey => journey.id}
+        renderItem={({item}) => (
+          <View style={styles.journeyView}>
+            <View style={styles.imageTrainLogoContainer}>
+              <Image source={require('../resources/train_placeholder.png')} />
             </View>
-            <Text style={styles.selectDate}>Select Date</Text>
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity onPress={() => this.setModalVisibility(false)}>
-                <Text style={styles.modalButton}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  this.addJourney();
-                  this.setModalVisibility(false);
-                }}>
-                <Text style={styles.modalButton}>Add Journey</Text>
-              </TouchableOpacity>
+            <View style={styles.journeyDetails}>
+              <Text>{item.from}</Text>
+              <Image source={require('../resources/arrow-circle-right.png')} />
+              <Text>{item.to}</Text>
             </View>
           </View>
-        </Modal>
-      </View>
-    );
-  }
-}
+        )}
+      />
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => {
+          setModalVisibility(!display.isModalVisible);
+        }}>
+        <Text style={styles.textPlusSymbol}>+</Text>
+      </TouchableOpacity>
+      <Modal isVisible={display.isModalVisible} hasBackdrop={false}>
+        <View style={styles.modal}>
+          <View>
+            <TextInput
+              style={styles.textInputStation}
+              placeholder="Departure Station:"
+              onChangeText={text => setJourneyFrom(text)}
+            />
+            <TextInput
+              style={styles.textInputStation}
+              placeholder="Destination Station:"
+              onChangeText={text => setJourneyTo(text)}
+            />
+          </View>
+          <Text style={styles.selectDate}>Select Date</Text>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity onPress={() => setModalVisibility(false)}>
+              <Text style={styles.modalButton}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                addJourney();
+                setModalVisibility(false);
+              }}>
+              <Text style={styles.modalButton}>Add Journey</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+export default TicketsScreen;
 
 const styles = StyleSheet.create({
   root: {

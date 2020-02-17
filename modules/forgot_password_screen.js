@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+/* eslint-disable prettier/prettier */
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,62 +10,62 @@ import {
 import validator from 'validator';
 import auth from '@react-native-firebase/auth';
 
-export default class LoginScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.email = '';
-    this.password = '';
-    this.isEmailCorrect = false;
-  }
-
-  render() {
-    return (
-      <View style={styles.root}>
-        <Text style={styles.appName}>REPAYLINE</Text>
-        <View>
-          <Text style={styles.forgotPasswordMessageFirstLine}>
-            Forgot Password?
-          </Text>
-          <Text style={styles.forgotPasswordMessage}>enter your email</Text>
-          <Text style={styles.forgotPasswordMessage}>to get it.</Text>
-        </View>
-        <View>
-          <View>
-            <TextInput
-              style={styles.textInputEmail}
-              placeholder="Your email"
-              ref={component => (this.textInputEmail = component)}
-              onChangeText={text => this.onCheckEmailInput(text)}
-            />
-          </View>
-          <TouchableOpacity onPress={this.onLogin}>
-            <Text style={styles.buttonLogIn}>Send it to me</Text>
-          </TouchableOpacity>
-        </View>
-        <View />
-      </View>
-    );
-  }
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isEmailCorrect, setIsEmailCorrect] = useState(false);
 
   /**
    * Validates email pattern
    * @param text containing the email
    */
-  onCheckEmailInput(text) {
-    this.email = text;
+  const onCheckEmailInput = (text) => {
+    setEmail(text);
     if (!validator.isEmail(text)) {
-      this.isEmailCorrect = false;
-      this.textInputEmail.setNativeProps({
+      setIsEmailCorrect(false);
+      /*this.textInputEmail.setNativeProps({
         borderColor: '#DC7575',
-      });
+      });*/
     } else if (validator.isEmail(text)) {
-      this.isEmailCorrect = true;
-      this.textInputEmail.setNativeProps({
+      setIsEmailCorrect(true);
+      /*this.textInputEmail.setNativeProps({
         borderColor: '#CCCCCC',
-      });
+      });*/
     }
-  }
-}
+  };
+
+  return (
+    <View style={styles.root}>
+      <Text style={styles.appName}>REPAY LINE</Text>
+      <View>
+        <Text style={styles.forgotPasswordMessageFirstLine}>
+          Forgot Password?
+        </Text>
+        <Text style={styles.forgotPasswordMessage}>Enter your email</Text>
+        <Text style={styles.forgotPasswordMessage}>to get it.</Text>
+      </View>
+      <View>
+        <View>
+          <TextInput
+            style={[
+              styles.textInputEmail,
+              {borderColor: isEmailCorrect ? '#CCCCCC' : '#DC7575'},
+            ]}
+            placeholder="Your email"
+            defaultValue={email}
+            onChangeText={text => onCheckEmailInput(text)}
+          />
+        </View>
+        <TouchableOpacity onPress={console.log('Hello')}>
+          <Text style={styles.buttonLogIn}>Send it to me</Text>
+        </TouchableOpacity>
+      </View>
+      <View />
+    </View>
+  );
+};
+
+export default ForgotPassword;
 
 const styles = StyleSheet.create({
   root: {
@@ -90,7 +91,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   textInputEmail: {
-    borderColor: '#CCCCCC',
     borderRadius: 8,
     borderWidth: 1,
     height: 60,

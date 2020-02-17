@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+/* eslint-disable prettier/prettier */
+import React, {useState} from 'react';
 import {
   Alert,
   AsyncStorage,
@@ -11,29 +12,35 @@ import {
 import validator from 'validator';
 import auth from '@react-native-firebase/auth';
 
-export default class RegisterScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.fullname = '';
-    this.email = '';
-    this.password = '';
-    this.isEmailCorrect = false;
-  }
+const RegisterScreen = ({navigation}) => {
+  const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isEmailCorrect, setIsEmailCorrect] = useState(false);
+
+  const onCheckEmailInput = (text) => {
+    setEmail(text);
+    if (!validator.isEmail(text)) {
+      setIsEmailCorrect(false);
+    } else if (validator.isEmail(text)) {
+      setIsEmailCorrect(true);
+    }
+  };
 
   /**
    * This creates a new user credential
    * @param {*} email of the user
    * @param {*} password of the user
    */
-  async signUp(email, password) {
+  const signUp = async (em, pass) => {
     auth()
-      .createUserWithEmailAndPassword(email, password)
+      .createUserWithEmailAndPassword(em, pass)
       .then(async () => {
         // Persist user's credentials
-        await AsyncStorage.setItem('email', email);
-        await AsyncStorage.setItem('password', password);
+        await AsyncStorage.setItem('email', em);
+        await AsyncStorage.setItem('password', pass);
         // Make POST request to backend
-        this.props.navigation.reset({
+        navigation.reset({
           index: 0,
           routes: [{name: 'Tickets'}],
         });
@@ -41,102 +48,84 @@ export default class RegisterScreen extends Component {
       .catch(error => {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            Alert.alert('Sign Up', `Hey, ${email} is already in use`);
+            Alert.alert('Sign Up', `Hey, ${em} is already in use`);
             break;
           case 'auth/invalid-email':
-            Alert.alert('Sign Up', `Hey, ${email} is invalid`);
+            Alert.alert('Sign Up', `Hey, ${em} is invalid`);
             break;
           default:
           // Do nothing for now
         }
       });
-  }
-
-  render() {
-    return (
-      <View style={styles.root}>
-        <Text style={styles.appName}>REPAYLINE</Text>
-        <View>
-          <Text style={styles.welcomeMessageFirstLine}>Welcome</Text>
-          <Text style={styles.welcomeMessage}>sign up and reclaim</Text>
-          <Text style={styles.welcomeMessage}>your money.</Text>
-        </View>
-        <View>
-          <View>
-            <TextInput
-              style={styles.textInputFullname}
-              placeholder="Fullname"
-              onChangeText={text => (this.fullname = text)}
-            />
-            <TextInput
-              style={styles.textInputEmail}
-              placeholder="Email"
-              ref={component => (this.textInputEmail = component)}
-              onChangeText={text => this.onCheckEmailInput(text)}
-            />
-            <TextInput
-              style={styles.textInputPassword}
-              placeholder="Password"
-              secureTextEntry={true}
-              onChangeText={text => (this.password = text)}
-            />
-          </View>
-          <TouchableOpacity onPress={this.onSignUp}>
-            <Text style={styles.buttonSignUp}>Sign me up</Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Text style={styles.textRegisterInfo}>
-            By creating an account you agree to our
-          </Text>
-          <Text style={styles.textRegisterInfo}>
-            <Text style={styles.textRegisterInfoLink}>
-              Terms &amp; Conditions
-            </Text>{' '}
-            and <Text style={styles.textRegisterInfoLink}>Privacy Policy</Text>
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  /**
-   * Validates email pattern
-   * @param text containing the email
-   */
-  onCheckEmailInput(text) {
-    this.email = text;
-    if (!validator.isEmail(text)) {
-      this.isEmailCorrect = false;
-      this.textInputEmail.setNativeProps({
-        borderColor: '#DC7575',
-        borderWidth: 1,
-      });
-    } else if (validator.isEmail(text)) {
-      this.isEmailCorrect = true;
-      this.textInputEmail.setNativeProps({
-        borderColor: '#CCCCCC',
-        borderTopWidth: 0,
-        borderBottomWidth: 0,
-      });
-    }
-  }
+  };
 
   /**
    * Validates the fullname, email and password input for empty entries
    */
-  onSignUp = () => {
-    if (this.fullname === '' || this.email === '' || this.password === '') {
+  const onSignUp = () => {
+    if (fullname === '' || email === '' || password === '') {
       Alert.alert('Sing Up', 'Please provide all details');
-    } else if (!this.isEmailCorrect) {
+    } else if (!isEmailCorrect) {
       Alert.alert('Sing Up', 'Please provide a valid email');
-    } else if (this.password.length < 6) {
+    } else if (password.length < 6) {
       Alert.alert('Sing Up', 'Password must be at least 6 characters long');
     } else {
-      this.signUp(this.email, this.password);
+      signUp(email, password);
     }
   };
-}
+
+  return (
+    <View style={styles.root}>
+      <Text style={styles.appName}>REPAYLINE</Text>
+      <View>
+        <Text style={styles.welcomeMessageFirstLine}>Welcome</Text>
+        <Text style={styles.welcomeMessage}>sign up and reclaim</Text>
+        <Text style={styles.welcomeMessage}>your money.</Text>
+      </View>
+      <View>
+        <View>
+          <TextInput
+            style={styles.textInputFullname}
+            placeholder="Fullname"
+            onChangeText={text => setFullname(text)}
+            defaultValue={fullname}
+          />
+          <TextInput
+            style={[
+              styles.textInputEmail,
+              {borderColor: isEmailCorrect ? '#CCCCCC' : '#DC7575'},
+            ]}
+            placeholder="Email"
+            defaultValue={email}
+            onChangeText={text => onCheckEmailInput(text)}
+          />
+          <TextInput
+            style={styles.textInputPassword}
+            placeholder="Password"
+            secureTextEntry={true}
+            onChangeText={text => setPassword(text)}
+          />
+        </View>
+        <TouchableOpacity onPress={onSignUp}>
+          <Text style={styles.buttonSignUp}>Sign me up</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <Text style={styles.textRegisterInfo}>
+          By creating an account you agree to our
+        </Text>
+        <Text style={styles.textRegisterInfo}>
+          <Text style={styles.textRegisterInfoLink}>
+            Terms &amp; Conditions
+          </Text>{' '}
+          and <Text style={styles.textRegisterInfoLink}>Privacy Policy</Text>
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+export default RegisterScreen;
 
 const styles = StyleSheet.create({
   root: {
